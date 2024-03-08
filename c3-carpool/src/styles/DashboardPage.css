@@ -1,0 +1,61 @@
+.Dashboard {
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    margin-top: 100px;
+    height: 100vh; /* Use full viewport height to vertically center the cards container */
+  }
+  
+  .Dashboard-header {
+    background-color: #004d40;
+    color: white;
+    padding: 20px 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+  
+  .Dashboard-actions {
+    margin-top: 60px; /* Adjust based on header size to ensure content doesn't overlap */
+  }
+  
+  .Actions-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    justify-content: space-around; /* Adjusts content distribution */
+    align-content: center; /* Centers grid items vertically */
+    padding: 20px;
+    max-width: 450px; /* Control the max width to manage spacing */
+    margin: auto; /* Center the grid container horizontally */
+  }
+  
+  .Action-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 180px; /* Minimum width for each card */
+    padding: 20px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+  
+  .Action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .Action-card svg {
+    margin-bottom: 10px;
+    font-size: 24px; /* Icon size */
+  }
+  
+  .Action-card-title, .Action-card-text { /* Assuming you add these for title and text */
+    margin: 5px 0;
+  }
+  

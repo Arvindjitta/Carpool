@@ -1,0 +1,63 @@
+.App {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.App-header {
+  background-color: #004d40;
+  color: white;
+  padding: 20px 0;
+  margin-bottom: 2rem;
+}
+
+main {
+  padding: 0 2rem;
+}
+
+section.sign-up {
+  background-color: #e0f2f1;
+  padding: 2rem;
+  border-radius: 8px;
+  margin: auto;
+  max-width: 600px;
+}
+
+section.sign-up h2 {
+  margin-bottom: 1.5rem;
+}
+
+button {
+  background-color: #00796b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 1em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 5px; /* Spacing between buttons and from the text above */
+  width: 220px; /* Ensures equal width for all buttons */
+}
+
+button:hover {
+  background-color: #004d40;
+}
+
+a.login-link {
+  display: inline-block;
+  margin-top: 20px;
+  background-color: #00796b;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.3s;
+}
+
+a.login-link:hover {
+  background-color: #004d40;
+}
