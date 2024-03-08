@@ -1,0 +1,102 @@
+# General
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.seed
+*.db
+*.sql
+*.sqlite
+*.tar.gz
+*.zip
+*.gz
+*.rar
+*.exe
+*.dll
+*.so
+*.dylib
+.tmp
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.sass-cache
+.npm
+.bower
+cache/
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+history
+*.bak
+*.tmp
+*.swp
+*.swo
+
+# Node / React specific (Customized for c3-carpool)
+c3-carpool/node_modules/
+c3-carpool/build/
+c3-carpool/.env
+
+# Python / Flask specific (Customized for flask-mongo-app)
+flask-mongo-app/__pycache__/
+flask-mongo-app/instance/
+flask-mongo-app/.webassets-cache
+flask-mongo-app/*.pyc
+flask-mongo-app/*.pyo
+flask-mongo-app/*.pyd
+flask-mongo-app/.Python
+flask-mongo-app/env/
+flask-mongo-app/venv/
+flask-mongo-app/ENV/
+flask-mongo-app/env.bak/
+flask-mongo-app/venv.bak/
+flask-mongo-app/*.egg-info/
+flask-mongo-app/.dist-info/
+flask-mongo-app/pip-log.txt
+flask-mongo-app/pip-delete-this-directory.txt
+flask-mongo-app/.tox/
+flask-mongo-app/.coverage
+flask-mongo-app/.coverage.*
+flask-mongo-app/cache
+flask-mongo-app/nosetests.xml
+flask-mongo-app/coverage.xml
+flask-mongo-app/*.cover
+flask-mongo-app/.hypothesis/
+flask-mongo-app/.pytest_cache/
+flask-mongo-app/flask-mongo-app/.env
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Databases
+*.sqlite3
+*.sqlite3-journal
+.mongorc.js
+
+# Virtual environments (General)
+venv/
+ENV/
+env/
+.python-version
+.cache
+pip-log.txt
+pip-delete-this-directory.txt
+.python-version
+celerybeat-schedule
+celerybeat.pid
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# PyCharm
+.idea/
+
+# Pyre type checker
+.pyre/
