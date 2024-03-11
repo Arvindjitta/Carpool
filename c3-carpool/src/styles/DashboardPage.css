@@ -15,6 +15,25 @@
     top: 0;
     width: 100%;
   }
+  .Logout-button {
+    position: absolute;
+    bottom: 30px; /* Position the logout button towards the bottom */
+    right: 20px; /* Maintain some space from the right edge */
+    padding: 10px 20px;
+    background-color: #f44336; /* Red color for logout to distinguish it */
+    color: white;
+    border: none;
+    width: 100px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between icon and text */
+  }
+  
+  .Logout-button:hover {
+    background-color: #d32f2f;
+  }
   
   .Dashboard-actions {
     margin-top: 60px; /* Adjust based on header size to ensure content doesn't overlap */

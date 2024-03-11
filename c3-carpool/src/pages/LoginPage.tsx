@@ -13,6 +13,7 @@ const LoginPage: React.FC = () => {
     email: "",
     password: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false); // New state to track form submission
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -22,12 +23,42 @@ const LoginPage: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSubmitting(true); // Disable the submit button
     console.log(loginFormData);
     // Here, you would typically handle login verification
     // For now, let's assume login is successful and redirect to a dashboard/homepage
-    navigate("/dashboard", { state: { userType: "rider" } }); // Adjust the path as needed
+    try {
+      const response = await fetch("http://127.0.0.1:5000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loginFormData),
+      });
+
+      if (response.ok) {
+        const { access_token, userType } = await response.json();
+        console.log("Login successful:", access_token, userType);
+        // alert(`Login successful as ${userType}!`);
+
+        // Store the received token and userType in localStorage/sessionStorage or context
+        localStorage.setItem("access_token", access_token);
+        localStorage.setItem("userType", userType);
+
+        // Redirect user based on userType or to a common dashboard
+        navigate("/dashboard", { state: { userType: `${userType}` } }); // Adjust the path as needed
+      } else {
+        const errorResponse = await response.json();
+        alert("Login failed: " + errorResponse.error);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Login failed: An unexpected error occurred.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -54,7 +85,9 @@ const LoginPage: React.FC = () => {
             required
           />
         </div>
-        <button type="submit">Log In</button>
+        <button type="submit" disabled={isSubmitting}>
+          Log In
+        </button>
       </form>
     </div>
   );

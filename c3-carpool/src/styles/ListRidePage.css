@@ -1,0 +1,70 @@
+.ListRide {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh; /* Full height to center form vertically */
+    background-color: #f4f4f4; /* Light background */
+    font-family: 'Arial', sans-serif;
+  }
+  
+  h1 {
+    /* color: #004d40; */
+    margin-bottom: 20px;
+  }
+  
+  .RideForm {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 90%;
+    max-width: 500px; /* Max width for larger screens */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .RideForm input, .RideForm button {
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    outline: none;
+  }
+  
+  .RideForm input:focus {
+    border-color: #00796b; /* Highlight input on focus */
+    box-shadow: 0 0 0 2px rgba(0, 121, 107, 0.2);
+  }
+  
+  .RideForm button {
+    background-color: #00796b;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+  }
+  
+  .RideForm button:hover {
+    background-color: #005a4f; /* Darker shade on hover */
+  }
+  
+  /* Back to Dashboard Button */
+  .BackButton {
+    margin-top: 20px;
+    background-color: transparent;
+    color: #00796b;
+    border: 2px solid #00796b;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .BackButton:hover {
+    background-color: #00796b;
+    color: white;
+  }
+  

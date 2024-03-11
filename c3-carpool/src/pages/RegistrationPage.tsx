@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom"; // Import useLocation hook
 import "../styles/RegistrationPage.css"; // Assuming you have a CSS file for styling
+import { useNavigate } from "react-router-dom";
 
 interface ICarInfo {
   licensePlate?: string;
@@ -19,6 +20,8 @@ interface IFormData {
 
 const RegistrationPage: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
   // Extracting userType from location state; defaulting to "rider" if not found
   const userType = location.state?.userType || "rider";
 
@@ -75,7 +78,9 @@ const RegistrationPage: React.FC = () => {
         // For example, you could clear the form, show a success message, or redirect the user
         const result = await response.json();
         console.log(result);
-        alert("Registration successful!");
+        // alert("Registration successful!");
+        navigate("/login"); // Adjust the path as needed
+
         // Reset form or redirect user
         // setFormData(initialFormData);
         // redirect user to login or other page

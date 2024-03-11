@@ -63,18 +63,6 @@ def delete_dummy_users():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Insert new user
-# @app.route('/register', methods=['POST'])
-# def register():
-#     try:
-#         user_data = request.get_json()
-#         user_data['password'] = bcrypt.generate_password_hash(user_data['password']).decode('utf-8')  # Hashing the password
-#         result = users.insert_one(user_data)
-#         return jsonify({'message': 'User registered successfully', 'id': str(result.inserted_id)}), 201
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
-
-
 @app.route('/register', methods=['POST'])
 def register():
     user_data = request.get_json()
@@ -111,8 +99,7 @@ def handle_exception(e):
     # Return a JSON response with a 500 status code
     return jsonify({'error': 'A server error occurred'}), 500
     
-
-# Login
+#Login
 @app.route('/login', methods=['POST'])
 def login():
     try:
@@ -121,11 +108,12 @@ def login():
         
         if user and bcrypt.check_password_hash(user['password'], login_details['password']):
             access_token = create_access_token(identity=login_details['email'])
-            return jsonify(access_token=access_token), 200
+            return jsonify(access_token=access_token, userType=user.get('userType', 'unknown')), 200
         else:
             return jsonify({'message': 'Invalid credentials'}), 401
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # Get all users (Limit to 100 for performance)  
 @app.route('/users', methods=['GET'])
@@ -136,6 +124,8 @@ def get_all_users():
         return jsonify(json.loads(dumps(all_users))), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

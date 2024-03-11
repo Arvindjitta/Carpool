@@ -27,6 +27,7 @@
     border: 1px solid #ccc;
     background-color: white;
     box-sizing: border-box; /* Ensures padding does not affect the final computed width of an element */
+    font-size: 18px;
   }
   
   .registrationForm button {
