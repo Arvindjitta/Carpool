@@ -7,6 +7,36 @@ interface ILoginFormData {
   password: string;
 }
 
+function ClickCounter() {
+  // Use useRef to hold a mutable value that doesn't cause re-renders
+  const clickCount = React.useRef(0);
+  console.log("MyComponent rendered!");
+
+  const handleClick = () => {
+    clickCount.current += 1;
+    console.log(`Button clicked ${clickCount.current} times`);
+  };
+
+  return <button onClick={handleClick}>Click Me</button>;
+}
+
+function ClickCounterWithUseState() {
+  // Use useState to hold and set the number of clicks
+  const [clickCount, setClickCount] = useState(0);
+  console.log("MyComponent rendered!");
+
+  const handleClick = () => {
+    setClickCount(clickCount + 1);
+  };
+
+  return (
+    <div>
+      <button onClick={handleClick}>Click Me</button>
+      <p>Button clicked {clickCount} times</p>
+    </div>
+  );
+}
+
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [loginFormData, setLoginFormData] = useState<ILoginFormData>({
@@ -41,7 +71,7 @@ const LoginPage: React.FC = () => {
       if (response.ok) {
         const { access_token, userType } = await response.json();
         console.log("Login successful:", access_token, userType);
-        // alert(`Login successful as ${userType}!`);
+        alert(`Login successful as ${userType}!`);
 
         // Store the received token and userType in localStorage/sessionStorage or context
         localStorage.setItem("access_token", access_token);

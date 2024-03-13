@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from bson.json_util import dumps
 from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager, create_access_token
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import json
 import re
 from flask_cors import CORS
@@ -14,6 +14,7 @@ CORS(app)
 client = MongoClient('mongodb+srv://rvindjitta11:eQgGxyrvB3ADmoA5@cluster0.g7egdoz.mongodb.net/CarpoolDB?retryWrites=true&w=majority')
 db = client.CarpoolDB  # Using the 'CarpoolDB' database
 users = db.users  # Accessing the 'users' collection
+rides = db.rides  # Accessing the 'rides' collection
 
 app.config["JWT_SECRET_KEY"] = "your_jwt_secret_key"
 
@@ -24,45 +25,12 @@ jwt = JWTManager(app)
 def not_found(error):
     return jsonify({'error': 'Not found'}), 404
 
+#home
 @app.route('/')
 def welcome():
     return "Welcome to the Carpool Application!"
 
-@app.route('/insert-dummy-data', methods=['GET'])
-def insert_dummy_data():
-    try:
-        # Define a list of dummy data to insert
-        dummy_users = [
-            {"name": "Alice", "email": "alice@example.com", "password": bcrypt.generate_password_hash("password1").decode('utf-8')},
-            {"name": "Bob", "email": "bob@example.com", "password": bcrypt.generate_password_hash("password2").decode('utf-8')},
-            {"name": "Charlie", "email": "charlie@example.com", "password": bcrypt.generate_password_hash("password3").decode('utf-8')}
-        ]
-        # Insert dummy data into the database
-        result = users.insert_many(dummy_users)
-        return jsonify({'message': f'{len(result.inserted_ids)} dummy users inserted.'}), 201
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route('/get-dummy-users', methods=['GET'])
-def get_dummy_users():
-    try:
-        # Fetch all users (excluding passwords) from the database
-        users_list = users.find({}, {'password': 0})
-        return jsonify(json.loads(dumps(users_list))), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/delete-dummy-users', methods=['GET'])
-def delete_dummy_users():
-    try:
-        # Assuming dummy users can be identified by an email pattern
-        dummy_user_criteria = {"email": {"$regex": "example.com$"}}
-        result = users.delete_many(dummy_user_criteria)
-        return jsonify({'message': f'Dummy users deleted. Total documents deleted: {result.deleted_count}'}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
+#register
 @app.route('/register', methods=['POST'])
 def register():
     user_data = request.get_json()
@@ -91,6 +59,7 @@ def register():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+#error handler
 @app.errorhandler(Exception)
 def handle_exception(e):
     # Optionally, log the error here
@@ -114,6 +83,43 @@ def login():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/list-ride', methods=['POST'])
+@jwt_required()
+def list_ride():
+    current_user_email = get_jwt_identity()  # Get the email of the logged-in user
+    ride_data = request.get_json()
+
+    # Start by checking common required fields
+    common_required_fields = ['startPoint', 'endPoint', 'date', 'time']
+    if not all(field in ride_data for field in common_required_fields):
+        return jsonify({'error': 'Missing required ride details'}), 400
+
+    # Additional checks based on userType
+    if ride_data.get('userType') == 'driver':
+        # Check for driver-specific required fields
+        driver_required_fields = ['seatsAvailable', 'carInfo']
+        if not all(field in ride_data for field in driver_required_fields):
+            return jsonify({'error': 'Missing required details for driver listing'}), 400
+    elif ride_data.get('userType') == 'rider':
+        # Check for rider-specific required fields
+        if 'numberOfRiders' not in ride_data:
+            return jsonify({'error': 'Number of riders is required for rider listing'}), 400
+    else:
+        # If userType is neither 'driver' nor 'rider', return an error
+        return jsonify({'error': 'Invalid userType specified'}), 400
+
+    # Append the current user's email to the ride_data for reference
+    ride_data['listedBy'] = current_user_email
+
+    try:
+        # Insert the new ride document into the MongoDB collection
+        result = rides.insert_one(ride_data)
+        return jsonify({'message': 'Ride listed/scheduled successfully', 'rideId': str(result.inserted_id)}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
 
 # Get all users (Limit to 100 for performance)  
 @app.route('/users', methods=['GET'])
@@ -129,3 +135,4 @@ def get_all_users():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
