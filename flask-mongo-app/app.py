@@ -6,6 +6,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 import json
 import re
 from flask_cors import CORS
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -15,6 +16,7 @@ client = MongoClient('mongodb+srv://rvindjitta11:eQgGxyrvB3ADmoA5@cluster0.g7egd
 db = client.CarpoolDB  # Using the 'CarpoolDB' database
 users = db.users  # Accessing the 'users' collection
 rides = db.rides  # Accessing the 'rides' collection
+cars = db.car_info # Accessing the 'car_info' collection
 
 app.config["JWT_SECRET_KEY"] = "your_jwt_secret_key"
 
@@ -46,18 +48,39 @@ def register():
         return jsonify({'error': 'Email already in use'}), 409
 
     # Hash the password
-    user_data['password'] = bcrypt.generate_password_hash(user_data['password']).decode('utf-8')  # Using Flask-Bcrypt
+    user_data['password'] = bcrypt.generate_password_hash(user_data['password']).decode('utf-8')
+    user_data['wallet_balance'] = 0.0  # Initialize wallet_balance to zero
+    
+    # Add createdAt timestamp
+    user_data['createdAt'] = datetime.utcnow()
 
-    # Differentiating between rider and driver
-    if user_data.get('userType') == 'driver' and not user_data.get('carInfo'):
-        return jsonify({'error': 'Car information is required for drivers'}), 400
+    # Initialize car_info to None for all users; will only be updated for drivers with carInfo
+    car_info = None
 
-    # Insert the new user document into the MongoDB collection
+    # Check if user is a driver and provided carInfo
+    if user_data.get('userType') == 'driver':
+        car_info = user_data.pop('carInfo', None)  # Extract and remove carInfo if present
+        if not car_info:
+            return jsonify({'error': 'Car information is required for drivers'}), 400
+        # Validate carInfo contents if necessary, e.g., ensure licensePlate, make, model, type are present
+        # Add createdAt timestamp to car_info
+        car_info['createdAt'] = datetime.utcnow()
+
     try:
-        result = users.insert_one(user_data)
-        return jsonify({'message': 'User registered successfully', 'userId': str(result.inserted_id)}), 201
+        # Insert the new user document into the users collection
+        user_result = users.insert_one(user_data)
+        user_id = user_result.inserted_id
+
+        # If userType is 'driver' and carInfo was provided and extracted, insert it into the cars collection
+        if car_info:
+            car_info['userId'] = user_id  # Associate the car with the user by their ID
+            cars.insert_one(car_info)
+
+        return jsonify({'message': 'User registered successfully', 'userId': str(user_id)}), 201
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        # Roll back or handle user creation if car insertion fails, if necessary
+        return jsonify({'error': 'Registration failed', 'details': str(e)}), 500
+
 
 #error handler
 @app.errorhandler(Exception)
@@ -83,6 +106,7 @@ def login():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+#list/schedule ride 
 @app.route('/list-ride', methods=['POST'])
 @jwt_required()
 def list_ride():
@@ -118,7 +142,34 @@ def list_ride():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+#update/add car-info 
+@app.route('/update-car', methods=['POST'])
+@jwt_required()
+def update_car():
+    current_user_id = get_jwt_identity()  # Assuming JWT identity is set to userId
+    car_data = request.get_json()
 
+    # Assuming each driver can have multiple cars, identify which car to update
+    # This could be managed by requiring a carId in the request for updates
+    car_id = car_data.get('carId')
+
+    if car_id:
+        # Update existing car information
+        try:
+            result = cars.update_one({'carId': car_id, 'userId': current_user_id}, {'$set': car_data})
+            if result.modified_count == 0:
+                return jsonify({'message': 'No changes made or car not found'}), 404
+            return jsonify({'message': 'Car information updated successfully'}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    else:
+        # Add new car information for the user
+        car_data['userId'] = current_user_id
+        try:
+            cars.insert_one(car_data)
+            return jsonify({'message': 'Car information added successfully'}), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
 
 # Get all users (Limit to 100 for performance)  
