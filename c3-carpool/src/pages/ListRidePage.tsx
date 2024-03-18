@@ -63,7 +63,7 @@ const ListRidePage: React.FC = () => {
 
   return (
     <div className="ListRide">
-      <h1>List Your Ride</h1>
+      <h1>{userType === "rider" ? "List Your Ride" : "Schedule Your Ride"}</h1>
       <form onSubmit={handleSubmit} className="RideForm">
         <input
           type="text"
@@ -100,7 +100,7 @@ const ListRidePage: React.FC = () => {
             type="number"
             name="seatsAvailable"
             placeholder="Seats Available"
-            value={rideDetails.seatsAvailable}
+            value={rideDetails.seatsAvailable || ""}
             onChange={handleChange}
             required
           />

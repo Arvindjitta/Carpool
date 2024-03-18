@@ -60,7 +60,7 @@ const DashboardPage: React.FC = () => {
 
             <div
               className="Action-card"
-              onClick={() => navigate("/find-rides")}
+              onClick={() => navigate("/available-rides")}
             >
               <FontAwesomeIcon icon={faUserFriends} />
               <span>Find Rides</span>
@@ -82,7 +82,7 @@ const DashboardPage: React.FC = () => {
             {userType === "driver" && (
               <div
                 className="Action-card"
-                onClick={() => navigate("/schedule-ride")}
+                onClick={() => navigate("/list-ride")}
               >
                 <FontAwesomeIcon icon={faCalendarPlus} />
                 <span>Schedule a Ride</span>

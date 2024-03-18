@@ -1,0 +1,60 @@
+/* General styling for the wallet management page */
+.WalletManagement {
+    text-align: center;
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 1rem;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    background-color: #f0f0f0;
+}
+
+h2 {
+    color: #004d40;
+}
+
+form {
+    margin-top: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    color: #00796b;
+    font-weight: bold;
+}
+
+input, select {
+    width: 100%;
+    padding: 8px 10px;
+    margin-top: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+button {
+    width: 100%;
+    background-color: #00796b;
+    color: white;
+    padding: 10px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+button:hover {
+    background-color: #004d40;
+}
+
+/* Add additional styles for form controls focus and hover states */
+input:focus, select:focus {
+    outline-color: #00796b;
+}
+
+button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 107, 0.5);
+}

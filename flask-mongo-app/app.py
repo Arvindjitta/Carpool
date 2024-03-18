@@ -118,25 +118,33 @@ def list_ride():
     if not all(field in ride_data for field in common_required_fields):
         return jsonify({'error': 'Missing required ride details'}), 400
 
-    # Additional checks based on userType
-    if ride_data.get('userType') == 'driver':
-        # Check for driver-specific required fields
-        driver_required_fields = ['seatsAvailable', 'carInfo']
-        if not all(field in ride_data for field in driver_required_fields):
-            return jsonify({'error': 'Missing required details for driver listing'}), 400
-    elif ride_data.get('userType') == 'rider':
-        # Check for rider-specific required fields
+    # Retrieve current user's details from the users collection
+    current_user = users.find_one({"email": current_user_email})
+    if not current_user:
+        return jsonify({"error": "User not found"}), 404
+
+    # Check userType and required fields based on userType
+    if current_user.get('userType') == 'driver':
+        # Attempt to retrieve driver's car information
+        car_info = cars.find_one({"userId": current_user["_id"]})
+        if not car_info:
+            return jsonify({'error': 'Car information not found for driver'}), 404
+        # Include carInfo details in the ride_data, excluding the MongoDB '_id' field
+        ride_data['carInfo'] = {k: v for k, v in car_info.items() if k != '_id'}
+    elif current_user.get('userType') == 'rider':
         if 'numberOfRiders' not in ride_data:
             return jsonify({'error': 'Number of riders is required for rider listing'}), 400
     else:
-        # If userType is neither 'driver' nor 'rider', return an error
         return jsonify({'error': 'Invalid userType specified'}), 400
 
-    # Append the current user's email to the ride_data for reference
-    ride_data['listedBy'] = current_user_email
+    # Set the user who listed the ride
+    ride_data['listedBy'] = current_user["_id"]
+    ride_data['createdAt'] = datetime.utcnow()  # Add creation timestamp to the ride
+    #status varchar [note: 'Can be "Open", "In-progress", "Completed", "Cancelled"']
+    ride_data['status'] = "Open" 
 
     try:
-        # Insert the new ride document into the MongoDB collection
+        # Insert the new ride document into the rides collection
         result = rides.insert_one(ride_data)
         return jsonify({'message': 'Ride listed/scheduled successfully', 'rideId': str(result.inserted_id)}), 201
     except Exception as e:
@@ -170,6 +178,84 @@ def update_car():
             return jsonify({'message': 'Car information added successfully'}), 201
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+
+#available-rides
+@app.route('/available-rides', methods=['GET'])
+@jwt_required(optional=True)
+def available_rides():
+    try:
+        # Find rides with status 'Open', directly including embedded 'carInfo'
+        rides_cursor = rides.find({"status": "Open"})
+        
+        # Convert cursor to list of dicts and then to JSON string
+        rides_list = list(rides_cursor)
+        rides_json = dumps(rides_list)
+        
+        return rides_json, 200
+    except Exception as e:
+        return jsonify({"error": "Failed to fetch available rides", "details": str(e)}), 500
+
+#wallet code
+@app.route('/wallet', methods=['GET', 'POST'])
+@jwt_required()
+def manage_wallet():
+    current_user_id = get_jwt_identity()
+    
+    if request.method == 'GET':
+        # Fetch wallet balance
+        user = users.find_one({"_id": current_user_id})
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        return jsonify({"balance": user.get("walletBalance", 0)}), 200
+
+    elif request.method == 'POST':
+        # Add or withdraw funds based on the posted transaction type
+        data = request.json
+        amount = data.get("amount")
+        transaction_type = data.get("type")  # "add" for adding funds, "withdraw" for withdrawing funds
+
+        if not amount or amount <= 0:
+            return jsonify({"error": "Amount must be a positive number"}), 400
+
+        user = users.find_one({"_id": current_user_id})
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        if transaction_type == "add":
+            # Add funds to the user's wallet balance
+            new_balance = user.get("walletBalance", 0) + amount
+            users.update_one({"_id": current_user_id}, {"$set": {"walletBalance": new_balance}})
+            transaction = {
+                "userId": current_user_id,
+                "amount": amount,
+                "type": "credit",
+                "date": datetime.utcnow(),
+                "balanceAfter": new_balance
+            }
+            transactions.insert_one(transaction)
+
+        elif transaction_type == "withdraw":
+            if amount > user.get("walletBalance", 0):
+                return jsonify({"error": "Insufficient funds"}), 400
+
+            # Withdraw funds from the user's wallet balance
+            new_balance = user.get("walletBalance", 0) - amount
+            users.update_one({"_id": current_user_id}, {"$set": {"walletBalance": new_balance}})
+            transaction = {
+                "userId": current_user_id,
+                "amount": amount,
+                "type": "debit",
+                "date": datetime.utcnow(),
+                "balanceAfter": new_balance
+            }
+            transactions.insert_one(transaction)
+
+        return jsonify({
+            "message": "Transaction successful",
+            "new_balance": new_balance,
+            "transaction_type": transaction_type
+        }), 200
+
 
 
 # Get all users (Limit to 100 for performance)  

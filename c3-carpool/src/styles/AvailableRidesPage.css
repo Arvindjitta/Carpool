@@ -1,0 +1,89 @@
+:root {
+  --primary-color: #fafbfc; /* Example primary color: blue */
+  --secondary-color: #00796b;;; /* Example secondary color: grey */
+}
+
+.AvailableRides {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.RideCard {
+  width: 70%;
+  background-color: var(--primary-color);
+  color: white;
+  margin: 10px 0;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  transition: 0.3s;
+}
+
+.RideCard:hover {
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+.TimeAndDestination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  color: #000;
+}
+
+.DriverInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  color: #000;
+}
+
+.DriverInfo {
+  align-items: center;
+}
+
+.DriverName{
+  color: #00796b;
+}
+
+.DriverDetails {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 10px;
+}
+
+.Price {
+  background-color: var(--secondary-color);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  width: fit-content;
+  /* margin-bottom: 10px; */
+}
+
+.DetailsButton, .JoinButton {
+  border: none;
+  outline: none;
+  padding: 10px 20px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.DetailsButton {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.JoinButton {
+  background-color: var(--secondary-color);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+

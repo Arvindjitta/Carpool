@@ -21,12 +21,14 @@ const HomePage: React.FC = () => {
         {/* Intro, How It Works, Benefits sections remain unchanged */}
         <section className="sign-up">
           <h2>Get Started</h2>
-          <button onClick={() => handleRegister("rider")}>
-            <FontAwesomeIcon icon={faUser} /> Register as Rider
-          </button>
-          <button onClick={() => handleRegister("driver")}>
-            <FontAwesomeIcon icon={faCarSide} /> Register as Driver
-          </button>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <button onClick={() => handleRegister("rider")}>
+              <FontAwesomeIcon icon={faUser} /> Register as Rider
+            </button>
+            <button onClick={() => handleRegister("driver")}>
+              <FontAwesomeIcon icon={faCarSide} /> Register as Driver
+            </button>
+          </div>
           <a href="/login" className="login-link">
             Already have an account? Log in
           </a>
