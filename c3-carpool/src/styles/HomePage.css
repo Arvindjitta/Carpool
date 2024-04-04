@@ -1,8 +1,12 @@
 .App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   text-align: center;
   font-family: Arial, sans-serif;
   color: #333;
 }
+
 
 .App-header {
   background-color: #004d40;
@@ -12,15 +16,17 @@
 }
 
 main {
+  flex-grow: 1;
   padding: 0 2rem;
 }
+
 
 section.sign-up {
   background-color: #e0f2f1;
   padding: 2rem;
   border-radius: 8px;
   margin: auto;
-  max-width: 600px;
+  max-width: 500px;
 }
 
 section.sign-up h2 {
@@ -48,16 +54,18 @@ button:hover {
 }
 
 a.login-link {
-  display: inline-block;
   margin-top: 20px;
-  background-color: #00796b;
-  color: white;
-  padding: 10px 15px;
-  border-radius: 5px;
-  text-decoration: none;
-  transition: background-color 0.3s;
+  display: block;
 }
 
-a.login-link:hover {
-  background-color: #004d40;
+.App-footer {
+  padding: 20px;
+  text-align: center;
+  /* Other styling as needed */
+}
+
+.admin-login-link {
+  margin-top: 20px;
+  display: block;
+  /* Additional styling */
 }

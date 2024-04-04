@@ -21,7 +21,14 @@ const HomePage: React.FC = () => {
         {/* Intro, How It Works, Benefits sections remain unchanged */}
         <section className="sign-up">
           <h2>Get Started</h2>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             <button onClick={() => handleRegister("rider")}>
               <FontAwesomeIcon icon={faUser} /> Register as Rider
             </button>
@@ -34,6 +41,12 @@ const HomePage: React.FC = () => {
           </a>
         </section>
       </main>
+      <footer className="App-footer">
+        <a href="/admin-login" className="admin-login-link">
+          Admin Login
+        </a>
+        {/* Other footer content */}
+      </footer>
     </div>
   );
 };
