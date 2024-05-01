@@ -1,0 +1,70 @@
+:root {
+    --primary-color: #fafbfc; /* Soft white for backgrounds */
+    --secondary-color: #00796b; /* Deep teal for buttons and highlights */
+    --text-color: #333; /* Dark gray for text for better readability */
+    --button-hover-color: #005a4c; /* Slightly darker shade of secondary color for hover effects */
+}
+
+.BookedRides {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: var(--primary-color);
+    min-height: 100vh;
+}
+
+.BookingCard {
+    width: 80%;
+    background-color: white;
+    color: var(--text-color);
+    margin: 10px 0;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.3s;
+}
+
+.BookingCard:hover {
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.3);
+}
+
+.TimeAndDestination {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.DriverInfo {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.Price {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    width: fit-content;
+    text-align: center;
+}
+
+.DetailsButton, .JoinButton {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.DetailsButton:hover, .JoinButton:hover {
+    background-color: var(--button-hover-color);
+}
+
+h1 {
+    color: var(--secondary-color);
+}

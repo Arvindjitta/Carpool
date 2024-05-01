@@ -25,12 +25,17 @@ const RegistrationPage: React.FC = () => {
   // Extracting userType from location state; defaulting to "rider" if not found
   const userType = location.state?.userType || "rider";
 
+  // Initial form data setup, conditionally including carInfo based on userType
   const initialFormData: IFormData = {
     name: "",
     email: "",
     password: "",
     contactInfo: "",
-    carInfo: { licensePlate: "", make: "", model: "", type: "" },
+    ...(userType === "driver"
+      ? {
+          carInfo: { licensePlate: "", make: "", model: "", type: "" },
+        }
+      : {}),
   };
 
   const [formData, setFormData] = useState<IFormData>(initialFormData);
@@ -38,19 +43,21 @@ const RegistrationPage: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name.startsWith("carInfo.")) {
-      setFormData({
-        ...formData,
+    if (userType === "driver" && name.startsWith("carInfo.")) {
+      // Assuming carInfo fields are named like "carInfo.licensePlate" in the form
+      const fieldName = name.split(".")[1];
+      setFormData((prevFormData) => ({
+        ...prevFormData,
         carInfo: {
-          ...formData.carInfo,
-          [name.split(".")[1]]: value,
+          ...prevFormData.carInfo,
+          [fieldName]: value,
         },
-      });
+      }));
     } else {
-      setFormData({
-        ...formData,
+      setFormData((prevFormData) => ({
+        ...prevFormData,
         [name]: value,
-      });
+      }));
     }
   };
 

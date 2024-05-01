@@ -29,7 +29,10 @@ const HomePage: React.FC = () => {
               alignItems: "center",
             }}
           >
-            <button onClick={() => handleRegister("rider")}>
+            <button
+              style={{ marginRight: "10px" }}
+              onClick={() => handleRegister("rider")}
+            >
               <FontAwesomeIcon icon={faUser} /> Register as Rider
             </button>
             <button onClick={() => handleRegister("driver")}>
@@ -42,7 +45,7 @@ const HomePage: React.FC = () => {
         </section>
       </main>
       <footer className="App-footer">
-        <a href="/admin-login" className="admin-login-link">
+        <a href="/login" className="admin-login-link">
           Admin Login
         </a>
         {/* Other footer content */}

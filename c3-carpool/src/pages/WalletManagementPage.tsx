@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import "../styles/WalletManagementPage.css";
+import "../styles/WalletManagementPage.css"; // Ensure this path is correct
+
 interface WalletBalanceResponse {
   balance: number;
 }
@@ -16,6 +17,7 @@ const WalletManagementPage: React.FC = () => {
   const [transactionType, setTransactionType] = useState<"add" | "withdraw">(
     "add"
   );
+  const [processing, setProcessing] = useState<boolean>(false); // State to handle loading/processing feedback
 
   useEffect(() => {
     fetchWalletBalance();
@@ -27,7 +29,6 @@ const WalletManagementPage: React.FC = () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          // Include Authorization header if JWT is required
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
@@ -38,21 +39,27 @@ const WalletManagementPage: React.FC = () => {
 
       const data: WalletBalanceResponse = await response.json();
       setBalance(data.balance);
-      console.log("BALANCE", data.balance);
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error fetching wallet balance:", error);
+      alert("Error fetching wallet balance");
     }
   };
 
   const handleTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
+    setProcessing(true); // Start processing indication
+
+    if (!amount || isNaN(parseFloat(amount))) {
+      alert("Please enter a valid amount.");
+      setProcessing(false); // Stop processing indication
+      return;
+    }
 
     try {
-      const response = await fetch("/wallet", {
+      const response = await fetch("http://127.0.0.1:5000/wallet", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Include Authorization header if JWT is required
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
         body: JSON.stringify({
@@ -61,22 +68,26 @@ const WalletManagementPage: React.FC = () => {
         }),
       });
 
+      const data: TransactionResponse = await response.json();
+
       if (!response.ok) {
-        throw new Error("Transaction failed");
+        throw new Error(data.message || "Transaction failed");
       }
 
-      const data: TransactionResponse = await response.json();
       alert(data.message);
-      setBalance(data.new_balance); // Update balance displayed to the user
+      setBalance(data.new_balance);
       setAmount(""); // Reset amount field
-    } catch (error) {
-      console.error("Error:", error);
+    } catch (error: any) {
+      console.error("Error handling transaction:", error);
+      alert(error.message || "Error processing transaction");
+    } finally {
+      setProcessing(false); // Reset processing state
     }
   };
 
   return (
     <div className="WalletManagement">
-      <h2>Wallet Balance: ${balance}</h2>
+      <h2>Wallet Balance: ${balance.toFixed(2)}</h2>
       <form onSubmit={handleTransaction}>
         <div>
           <label>
@@ -105,7 +116,9 @@ const WalletManagementPage: React.FC = () => {
             </select>
           </label>
         </div>
-        <button type="submit">Submit</button>
+        <button type="submit" disabled={processing}>
+          {processing ? "Processing..." : "Submit"}
+        </button>
       </form>
     </div>
   );

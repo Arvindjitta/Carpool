@@ -1,0 +1,55 @@
+/* UserManagementPage.css */
+.UserManagement {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 20px;
+  }
+  
+  .UserManagement h1 {
+    color: #333; /* Dark gray for better readability */
+    margin-bottom: 20px;
+  }
+  
+  table {
+    width: 80%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  
+  th, td {
+    border: 1px solid #ccc; /* Light gray border for table cells */
+    padding: 8px;
+    text-align: center;
+  }
+  
+  th {
+    background-color: #00796b; /* Deep teal background for headers */
+    color: white;
+  }
+  
+  tbody tr:hover {
+    background-color: #f5f5f5; /* Light gray background on row hover */
+  }
+  
+  button {
+    background-color: #00796b; /* Deep teal background for buttons */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  button:hover {
+    background-color: #005a4c; /* Darker teal for hover effect */
+    transform: scale(1.05); /* Slightly enlarge button on hover */
+  }
+  
+  button:active {
+    transform: scale(0.95); /* Slightly shrink button when clicked */
+  }
+  

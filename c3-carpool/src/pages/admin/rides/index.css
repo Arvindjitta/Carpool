@@ -1,0 +1,71 @@
+/* Basic styling for the overall Ride Management container */
+.RideManagement {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Centers content vertically within the container */
+    padding: 20px;
+    font-family: Arial, sans-serif; /* Ensures text is readable */
+    width: 100%;
+}
+
+.RideManagement h1 {
+    color: #333; /* Dark gray for better readability */
+    margin-bottom: 20px;
+    text-align: center; /* Centers the heading text */
+}
+
+/* Styling for tables */
+table {
+    width: 90%; /* Table width relative to its container */
+    border-collapse: collapse; /* Ensures borders between cells are merged */
+    margin: 20px 0;
+    text-align: center; /* Centers all text in the table cells */
+}
+
+th, td {
+    border: 1px solid #ccc; /* Light gray border for table cells */
+    padding: 10px; /* Spacing inside cells */
+    vertical-align: middle; /* Centers content vertically within the cells */
+}
+
+th {
+    background-color: #00796b; /* Deep teal background for headers */
+    color: white; /* White text for contrast */
+}
+
+tbody tr:hover {
+    background-color: #f5f5f5; /* Light gray background on row hover */
+}
+
+/* Button styling within table cells for actions like edit and delete */
+button {
+    background-color: #00796b; /* Deep teal for a uniform look with headers */
+    color: white; /* White text for readability */
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px; /* Rounded corners for a modern look */
+    cursor: pointer; /* Indicates an actionable item */
+    margin: 0 auto; /* Auto margins for horizontal centering */
+    display: block; /* Block display to allow for margin auto to work */
+    transition: background-color 0.3s ease-in-out; /* Smooth transition for hover effect */
+}
+
+button:hover {
+    background-color: #005a4c; /* Slightly darker shade of teal for hover effect */
+}
+
+button:active {
+    transform: scale(0.95); /* Slightly shrink button when clicked */
+}
+
+/* Responsive table setup */
+@media (max-width: 768px) {
+    table {
+        width: 100%; /* Full width for smaller screens */
+    }
+
+    th, td {
+        padding: 8px; /* Smaller padding for compact appearance */
+    }
+}

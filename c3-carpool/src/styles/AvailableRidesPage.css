@@ -1,6 +1,7 @@
 :root {
   --primary-color: #fafbfc; /* Example primary color: blue */
   --secondary-color: #00796b;;; /* Example secondary color: grey */
+
 }
 
 .AvailableRides {
@@ -31,6 +32,8 @@
   align-items: center;
   margin-bottom: 10px;
   color: #000;
+  /* color: #3f3f3f; */
+  
 }
 
 .DriverInfo {
@@ -74,6 +77,8 @@
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
+
+
 
 .DetailsButton {
   background-color: var(--secondary-color);

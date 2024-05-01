@@ -36,7 +36,7 @@ const DashboardPage: React.FC = () => {
       localStorage.removeItem("authToken"); // Example: Clearing an auth token if you're using one
 
       // Redirect the user to the login page or home page
-      navigate("/login");
+      navigate("/");
     }
     // If user clicked "Cancel", do nothing and let them remain on the page
   };
@@ -57,28 +57,6 @@ const DashboardPage: React.FC = () => {
           <h2>Quick Actions</h2>
           <div className="Actions-container">
             {/* Conditionally rendered buttons wrapped in divs for card styling */}
-
-            <div
-              className="Action-card"
-              onClick={() => navigate("/available-rides")}
-            >
-              <FontAwesomeIcon icon={faUserFriends} />
-              <span>Find Rides</span>
-            </div>
-            <div
-              className="Action-card"
-              onClick={() => navigate("/manage-wallet")}
-            >
-              <FontAwesomeIcon icon={faWallet} />
-              <span>Manage Wallet</span>
-            </div>
-            <div
-              className="Action-card"
-              onClick={() => navigate("/view-rides")}
-            >
-              <FontAwesomeIcon icon={faRoad} />
-              <span>View My Rides</span>
-            </div>
             {userType === "driver" && (
               <div
                 className="Action-card"
@@ -88,7 +66,7 @@ const DashboardPage: React.FC = () => {
                 <span>Schedule a Ride</span>
               </div>
             )}
-            {userType === "rider" && (
+            {/* {userType === "rider" && (
               <div
                 className="Action-card"
                 onClick={() => navigate("/list-ride")}
@@ -96,7 +74,30 @@ const DashboardPage: React.FC = () => {
                 <FontAwesomeIcon icon={faCar} />
                 <span>List a Ride</span>
               </div>
+            )} */}
+            {userType === "rider" && (
+              <div
+                className="Action-card"
+                onClick={() => navigate("/available-rides")}
+              >
+                <FontAwesomeIcon icon={faUserFriends} />
+                <span>Find Rides</span>
+              </div>
             )}
+            <div
+              className="Action-card"
+              onClick={() => navigate("/manage-wallet")}
+            >
+              <FontAwesomeIcon icon={faWallet} />
+              <span>Manage Wallet</span>
+            </div>
+            <div
+              className="Action-card"
+              onClick={() => navigate("/booked-rides")}
+            >
+              <FontAwesomeIcon icon={faRoad} />
+              <span>My Bookings</span>
+            </div>
           </div>
         </section>
       </main>

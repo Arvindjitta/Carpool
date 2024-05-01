@@ -22,41 +22,30 @@ const ListRidePage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // Prepare the data to be sent to the backend
     const requestData = { ...rideDetails, userType };
-
-    // Assuming your backend endpoint for listing rides is /api/list-ride
-    const endpoint = "http://127.0.0.1:5000/list-ride";
-    const token = localStorage.getItem("access_token"); // Assuming you store your auth token in localStorage
-    console.log("Token", token);
+    const token = localStorage.getItem("access_token"); // Retrieve the token from local storage
 
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetch("http://127.0.0.1:5000/list-ride", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Include the Authorization header with the token, if needed
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // Correctly include the token in the Authorization header
         },
         body: JSON.stringify(requestData),
       });
 
       if (!response.ok) {
-        // Handle server errors or validation errors
         const errorData = await response.json();
         alert(`Failed to list ride: ${errorData.error}`);
         return;
       }
 
-      // If the request was successful
       const data = await response.json();
       alert(data.message); // "Ride listed successfully!"
-      navigate("/dashboard", { state: { userType: `${userType}` } }); // Redirect back to the dashboard
+      navigate("/dashboard", { state: { userType: `${userType}` } });
     } catch (error) {
       console.error("Error listing ride:", error);
-      alert(error);
-
       alert("An error occurred. Please try again later.");
     }
   };
@@ -126,13 +115,6 @@ const ListRidePage: React.FC = () => {
         )}
         <button type="submit">List Ride</button>
       </form>
-      <button
-        onClick={() =>
-          navigate("/dashboard", { state: { userType: `${userType}` } })
-        }
-      >
-        Back to Dashboard
-      </button>
     </div>
   );
 };

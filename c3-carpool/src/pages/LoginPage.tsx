@@ -7,36 +7,6 @@ interface ILoginFormData {
   password: string;
 }
 
-function ClickCounter() {
-  // Use useRef to hold a mutable value that doesn't cause re-renders
-  const clickCount = React.useRef(0);
-  console.log("MyComponent rendered!");
-
-  const handleClick = () => {
-    clickCount.current += 1;
-    console.log(`Button clicked ${clickCount.current} times`);
-  };
-
-  return <button onClick={handleClick}>Click Me</button>;
-}
-
-function ClickCounterWithUseState() {
-  // Use useState to hold and set the number of clicks
-  const [clickCount, setClickCount] = useState(0);
-  console.log("MyComponent rendered!");
-
-  const handleClick = () => {
-    setClickCount(clickCount + 1);
-  };
-
-  return (
-    <div>
-      <button onClick={handleClick}>Click Me</button>
-      <p>Button clicked {clickCount} times</p>
-    </div>
-  );
-}
-
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [loginFormData, setLoginFormData] = useState<ILoginFormData>({
@@ -69,16 +39,21 @@ const LoginPage: React.FC = () => {
       });
 
       if (response.ok) {
-        const { access_token, userType } = await response.json();
-        console.log("Login successful:", access_token, userType);
+        const { access_token, userType, userId } = await response.json();
+        console.log("Login successful:", access_token, userType, userId);
         alert(`Login successful as ${userType}!`);
 
         // Store the received token and userType in localStorage/sessionStorage or context
         localStorage.setItem("access_token", access_token);
         localStorage.setItem("userType", userType);
+        localStorage.setItem("userId", userId);
 
         // Redirect user based on userType or to a common dashboard
-        navigate("/dashboard", { state: { userType: `${userType}` } }); // Adjust the path as needed
+        if (userType === "admin") {
+          navigate("/admin"); // Adjust the path as needed
+        } else {
+          navigate("/dashboard", { state: { userType: `${userType}` } }); // Adjust the path as needed
+        }
       } else {
         const errorResponse = await response.json();
         alert("Login failed: " + errorResponse.error);

@@ -7,7 +7,9 @@ export interface CarInfo {
 }
 
 export interface Ride {
-  rideId: string;
+  _id: {
+    $oid: string;
+  };
   userId: string;
   startPoint: string;
   endPoint: string;
