@@ -97,7 +97,7 @@ const RideManagementPage: React.FC = () => {
               <th>Time</th>
               <th>Status</th>
 
-              <th>Actions</th>
+              {/* <th>Actions</th> */}
             </tr>
           </thead>
           <tbody>
@@ -110,14 +110,14 @@ const RideManagementPage: React.FC = () => {
                 <td>{ride.time}</td>
                 <td>{ride.status}</td>
 
-                <td>
-                  {/* <button onClick={() => alert("Edit ride not implemented")}>
+                {/* <td>
+                  <button onClick={() => alert("Edit ride not implemented")}>
                     <FontAwesomeIcon icon={faEdit} /> Edit
-                  </button> */}
+                  </button>
                   <button onClick={() => deleteRide(ride._id.$oid)}>
                     <FontAwesomeIcon icon={faTrash} /> Delete
                   </button>
-                </td>
+                </td> */}
               </tr>
             ))}
           </tbody>

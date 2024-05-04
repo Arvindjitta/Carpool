@@ -82,7 +82,7 @@ const UserManagementPage: React.FC = () => {
               <th>Email</th>
               <th>UserType</th>
 
-              <th>Actions</th>
+              {/* <th>Actions</th> */}
             </tr>
           </thead>
           <tbody>
@@ -93,14 +93,14 @@ const UserManagementPage: React.FC = () => {
                 <td>{user.email}</td>
                 <td>{user.userType}</td>
 
-                <td>
-                  {/* <button onClick={() => alert("Edit user not implemented")}>
+                {/* <td> */}
+                {/* <button onClick={() => alert("Edit user not implemented")}>
                     <FontAwesomeIcon icon={faEdit} /> Edit
                   </button> */}
-                  <button onClick={() => deleteUser(user._id.$oid)}>
+                {/* <button onClick={() => deleteUser(user._id.$oid)}>
                     <FontAwesomeIcon icon={faTrash} /> Delete
-                  </button>
-                </td>
+                  </button> */}
+                {/* </td> */}
               </tr>
             ))}
           </tbody>

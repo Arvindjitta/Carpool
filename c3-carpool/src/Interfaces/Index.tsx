@@ -22,4 +22,10 @@ export interface Ride {
   carInfo?: CarInfo;
   showCarInfo: boolean;
   userType: string;
+  arrivalTime: "";
+  departureTime: "";
+  duration: "";
+  listedBy: {
+    $oid: string;
+  };
 }

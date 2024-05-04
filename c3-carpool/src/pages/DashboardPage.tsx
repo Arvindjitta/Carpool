@@ -32,9 +32,10 @@ const DashboardPage: React.FC = () => {
 
     if (isConfirmed) {
       // User clicked "OK", proceed with logout
-      localStorage.removeItem("userType"); // Example: Clearing a userType stored in localStorage
-      localStorage.removeItem("authToken"); // Example: Clearing an auth token if you're using one
-
+      // localStorage.removeItem("authToken");
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("userType");
       // Redirect the user to the login page or home page
       navigate("/");
     }
@@ -82,6 +83,15 @@ const DashboardPage: React.FC = () => {
               >
                 <FontAwesomeIcon icon={faUserFriends} />
                 <span>Find Rides</span>
+              </div>
+            )}
+            {userType === "driver" && (
+              <div
+                className="Action-card"
+                onClick={() => navigate("/available-rides")}
+              >
+                <FontAwesomeIcon icon={faUserFriends} />
+                <span>My Rides</span>
               </div>
             )}
             <div

@@ -11,6 +11,8 @@ interface Booking {
   status: string;
   pickupLocation: string;
   created_At: string;
+  date: string;
+  departureTime: string;
 }
 
 const BookedRidesPage: React.FC = () => {
@@ -20,18 +22,50 @@ const BookedRidesPage: React.FC = () => {
   const userType = localStorage.getItem("userType") as string;
 
   useEffect(() => {
-    fetchBookings();
+    const userId = localStorage.getItem("userId");
+    fetchBookings(userId);
   }, []);
 
-  //fetch all the bookings
-  const fetchBookings = async () => {
+  // //fetch all the bookings
+  // const fetchBookings = async () => {
+  //   try {
+  //     const userType = localStorage.getItem("userType") as string;
+  //     const token = localStorage.getItem("access_token") as string;
+  //     console.log("Usertype", userType);
+  //     const url =
+  //       userType === "rider"
+  //         ? "/rider/booked-rides"
+  //         : "/driver/scheduled-bookings";
+
+  //     const response = await fetch(`http://127.0.0.1:5000${url}`, {
+  //       method: "GET",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+  //     if (!response.ok) {
+  //       throw new Error("Failed to fetch bookings");
+  //     }
+  //     const data: Booking[] = await response.json();
+  //     // Sort bookings by created_At in descending order to show the latest bookings first
+  //     let reversed_data = data.reverse();
+  //     console.log("data", data);
+  //     setBookings(reversed_data);
+  //   } catch (error) {
+  //     console.error("Error fetching bookings:", error);
+  //   }
+  // };
+
+  const fetchBookings = async (userId: string | null) => {
     try {
       const userType = localStorage.getItem("userType") as string;
       const token = localStorage.getItem("access_token") as string;
+      console.log("Usertype", userType);
       const url =
         userType === "rider"
-          ? "/rider/booked-rides"
-          : "/driver/scheduled-bookings";
+          ? `/rider/booked-rides?userId=${userId}`
+          : `/driver/scheduled-bookings?userId=${userId}`;
 
       const response = await fetch(`http://127.0.0.1:5000${url}`, {
         method: "GET",
@@ -46,6 +80,7 @@ const BookedRidesPage: React.FC = () => {
       const data: Booking[] = await response.json();
       // Sort bookings by created_At in descending order to show the latest bookings first
       let reversed_data = data.reverse();
+      console.log("data", data);
       setBookings(reversed_data);
     } catch (error) {
       console.error("Error fetching bookings:", error);
@@ -144,17 +179,50 @@ const BookedRidesPage: React.FC = () => {
     }
   }
 
+  function formatDate(inputDate: any) {
+    // Parse the input date string
+    const inputDateFormat = new Date(inputDate);
+
+    // Adjust the date by adding the timezone offset
+    const adjustedDate = new Date(
+      inputDateFormat.getTime() + inputDateFormat.getTimezoneOffset() * 60000
+    );
+
+    // Extract year, month, and day components
+    const year = adjustedDate.getFullYear();
+    const month = String(adjustedDate.getMonth() + 1).padStart(2, "0"); // Adding 1 to month since getMonth() returns zero-based month
+    const day = String(adjustedDate.getDate()).padStart(2, "0");
+
+    // Format the date as MM-DD-YYYY
+    const formattedDate = `${month}-${day}-${year}`;
+
+    return formattedDate;
+  }
+  const to12HourFormat = (time: string): string => {
+    const [hour, minute] = time.split(":").map(Number); // Convert the hour and minute parts to numbers
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const hour12 = hour % 12 || 12; // Convert 0 to 12 for 12 AM
+    return `${hour12}:${minute.toString().padStart(2, "0")} ${ampm}`;
+  };
   return (
     <div className="AvailableRides">
       <h1>
         {localStorage.getItem("userType") === "rider"
           ? "My Booked Rides"
-          : "Scheduled Bookings"}
+          : "My Bookings"}
       </h1>
       {bookings.map((booking) => (
         <div key={booking._id.$oid} className="RideCard">
           <div className="TimeAndDestination">
             <div>Pickup Location: {booking.pickupLocation}</div>
+            <div>
+              <div className="time">
+                {booking.departureTime && formatDate(booking.date)} -- <b>D:</b>{" "}
+                {booking.departureTime && to12HourFormat(booking.departureTime)}
+                {/* {ride.arrivalTime} */}
+              </div>
+              <div className="time"></div>
+            </div>
           </div>
           <div className="DriverInfo">
             <div>Status: {booking.status}</div>
@@ -172,10 +240,11 @@ const BookedRidesPage: React.FC = () => {
               Cancel Booking
             </button>
           )}
-          {userType === "rider" &&
+          {userType === "driver" &&
             (booking.status === "Booked" ||
               booking.status === "In-progress") && (
               <button
+                style={{ marginTop: 10 }}
                 onClick={() =>
                   completeRide(
                     booking.rideId,

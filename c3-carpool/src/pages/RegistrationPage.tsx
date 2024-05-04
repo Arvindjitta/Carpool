@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom"; // Import useLocation hook
-import "../styles/RegistrationPage.css"; // Assuming you have a CSS file for styling
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import "../styles/RegistrationPage.css";
 
 interface ICarInfo {
   licensePlate?: string;
@@ -11,40 +10,50 @@ interface ICarInfo {
 }
 
 interface IFormData {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  password: any;
-  contactInfo: string;
+  password: string;
+  confirmPassword: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  dateOfBirth?: string;
+  ssn?: string;
   carInfo?: ICarInfo;
 }
 
 const RegistrationPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
-  // Extracting userType from location state; defaulting to "rider" if not found
   const userType = location.state?.userType || "rider";
 
-  // Initial form data setup, conditionally including carInfo based on userType
   const initialFormData: IFormData = {
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
-    contactInfo: "",
+    confirmPassword: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
     ...(userType === "driver"
       ? {
+          ssn: "",
           carInfo: { licensePlate: "", make: "", model: "", type: "" },
         }
       : {}),
+    ...(userType === "rider" ? { dateOfBirth: "" } : {}),
   };
 
   const [formData, setFormData] = useState<IFormData>(initialFormData);
-  const [isSubmitting, setIsSubmitting] = useState(false); // New state to track form submission
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (userType === "driver" && name.startsWith("carInfo.")) {
-      // Assuming carInfo fields are named like "carInfo.licensePlate" in the form
+    if (name.startsWith("carInfo.")) {
       const fieldName = name.split(".")[1];
       setFormData((prevFormData) => ({
         ...prevFormData,
@@ -63,9 +72,13 @@ const RegistrationPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true); // Disable the submit button
+    setIsSubmitting(true);
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match!");
+      setIsSubmitting(false);
+      return;
+    }
 
-    // Prepare the data to be submitted
     const submitData = {
       ...formData,
       userType,
@@ -81,27 +94,18 @@ const RegistrationPage: React.FC = () => {
       });
 
       if (response.ok) {
-        // If the registration is successful, handle accordingly
-        // For example, you could clear the form, show a success message, or redirect the user
         const result = await response.json();
         console.log(result);
-        // alert("Registration successful!");
-        navigate("/login"); // Adjust the path as needed
-
-        // Reset form or redirect user
-        // setFormData(initialFormData);
-        // redirect user to login or other page
+        navigate("/login");
       } else {
-        // If the server responded with an error status, handle accordingly
         const errorResponse = await response.json();
         alert("Registration failed: " + errorResponse.error);
       }
     } catch (error) {
-      // If the request failed to reach the server or there was an error in the request itself
       console.error("Registration error:", error);
       alert("Registration failed: An unexpected error occurred.");
     } finally {
-      setIsSubmitting(false); // Re-enable the submit button after the API call completes
+      setIsSubmitting(false);
     }
   };
 
@@ -110,11 +114,21 @@ const RegistrationPage: React.FC = () => {
       <h2>Register as a {userType === "driver" ? "Driver" : "Rider"}</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Name:</label>
+          <label>First Name:</label>
           <input
             type="text"
-            name="name"
-            value={formData.name}
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        <div>
+          <label>Last Name:</label>
+          <input
+            type="text"
+            name="lastName"
+            value={formData.lastName}
             onChange={handleInputChange}
             required
           />
@@ -132,7 +146,7 @@ const RegistrationPage: React.FC = () => {
         <div>
           <label>Password:</label>
           <input
-            type="text"
+            type="password"
             name="password"
             value={formData.password}
             onChange={handleInputChange}
@@ -140,17 +154,67 @@ const RegistrationPage: React.FC = () => {
           />
         </div>
         <div>
-          <label>Contact Info:</label>
+          <label>Confirm Password:</label>
+          <input
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        <div>
+          <label>Address:</label>
           <input
             type="text"
-            name="contactInfo"
-            value={formData.contactInfo}
+            name="address"
+            value={formData.address}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        <div>
+          <label>City:</label>
+          <input
+            type="text"
+            name="city"
+            value={formData.city}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        <div>
+          <label>State:</label>
+          <input
+            type="text"
+            name="state"
+            value={formData.state}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        <div>
+          <label>Zip Code:</label>
+          <input
+            type="text"
+            name="zipCode"
+            value={formData.zipCode}
             onChange={handleInputChange}
             required
           />
         </div>
         {userType === "driver" && (
           <>
+            <div>
+              <label>SSN:</label>
+              <input
+                type="text"
+                name="ssn"
+                value={formData.ssn}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
             <h3>Car Information</h3>
             <div>
               <label>License Plate:</label>
@@ -159,7 +223,7 @@ const RegistrationPage: React.FC = () => {
                 name="carInfo.licensePlate"
                 value={formData.carInfo?.licensePlate}
                 onChange={handleInputChange}
-                required={userType === "driver"}
+                required
               />
             </div>
             <div>
@@ -169,7 +233,7 @@ const RegistrationPage: React.FC = () => {
                 name="carInfo.make"
                 value={formData.carInfo?.make}
                 onChange={handleInputChange}
-                required={userType === "driver"}
+                required
               />
             </div>
             <div>
@@ -179,7 +243,7 @@ const RegistrationPage: React.FC = () => {
                 name="carInfo.model"
                 value={formData.carInfo?.model}
                 onChange={handleInputChange}
-                required={userType === "driver"}
+                required
               />
             </div>
             <div>
@@ -189,10 +253,22 @@ const RegistrationPage: React.FC = () => {
                 name="carInfo.type"
                 value={formData.carInfo?.type}
                 onChange={handleInputChange}
-                required={userType === "driver"}
+                required
               />
             </div>
           </>
+        )}
+        {userType === "rider" && (
+          <div>
+            <label>Date of Birth:</label>
+            <input
+              type="date"
+              name="dateOfBirth"
+              value={formData.dateOfBirth}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
         )}
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Submitting..." : "Submit"}

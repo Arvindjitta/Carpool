@@ -10,9 +10,17 @@ const AvailableRidesPage: React.FC = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [number, setNumber] = useState<number | "">("");
   const [pickupLocation, setPickupLocation] = useState<string>("");
+  const userType = localStorage.getItem("userType");
+  const currentUserId = localStorage.getItem("userId");
+  const openModal = (id: string) => {
+    setSelectedId(id);
+    setModalOpen(true);
+  };
 
-  const openModal = () => setModalOpen(true);
-  const closeModal = () => setModalOpen(false);
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedId(null); // Optionally clear the selected ride ID on modal close
+  };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const inputNumber = parseInt(event.target.value);
@@ -27,48 +35,39 @@ const AvailableRidesPage: React.FC = () => {
     setPickupLocation(event.target.value);
   };
 
-  const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>,
-    id: string
-  ) => {
-    console.log(
-      "BODY",
-      JSON.stringify({
-        rideId: id,
-        bookedBy: localStorage.getItem("userId"),
-        seatsBooked: number,
-        status: "Booked",
-        pickupLocation: pickupLocation,
-      })
-    );
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    console.log("rideId:", selectedId);
+    const token = localStorage.getItem("access_token");
     try {
-      const token = localStorage.getItem("access_token"); // Fetch JWT token from local storage
       const response = await fetch("http://127.0.0.1:5000/book-ride", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Include JWT token in Authorization header
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          rideId: id,
-          bookedBy: localStorage.getItem("userId"),
+          rideId: selectedId,
+          bookedBy: currentUserId,
           seatsBooked: number,
           status: "Booked",
-          pickupLocation: pickupLocation,
+          pickupLocation,
+          departureTime: rides.find((ride) => ride._id.$oid === selectedId)
+            ?.departureTime,
+          date: rides.find((ride) => ride._id.$oid === selectedId)?.date,
         }),
       });
-      if (!response.ok) {
+
+      if (response.ok) {
+        closeModal();
+        alert("Ride booked successfully!");
+      } else {
         const errorData = await response.json();
-        alert(`Failed to list ride: ${errorData.error}`);
-        return;
+        alert(`Booking failed: ${errorData.error}`);
       }
-      closeModal(); // Close the modal after successful booking
-      alert("Ride booked successfully!");
     } catch (error) {
       console.error("Error booking ride:", error);
-
-      // Handle booking error, e.g., display a message
+      alert("Booking failed due to an error.");
     }
   };
 
@@ -97,8 +96,14 @@ const AvailableRidesPage: React.FC = () => {
       let data: Ride[] = await response.json();
       let currentUserType = localStorage.getItem("userType");
       //filtering data based on usertype
-      data = data.filter((ride) => ride.userType !== currentUserType);
+      if (userType === "driver") {
+        data = data.filter((ride) => ride.listedBy.$oid === currentUserId);
+        console.log("userId", currentUserId);
+      } else {
+        data = data.filter((ride) => ride.userType !== currentUserType);
+      }
 
+      console.log("RIDE", rides);
       setRides(data.reverse());
       console.log("DAta", data);
     } catch (error) {
@@ -106,6 +111,31 @@ const AvailableRidesPage: React.FC = () => {
       // Handle fetch error, e.g., display a message
     }
   };
+
+  function formatDate(inputDate: any) {
+    // Parse the input date string
+    const inputDateFormat = new Date(inputDate);
+
+    // Adjust the date by adding the timezone offset
+    const adjustedDate = new Date(
+      inputDateFormat.getTime() + inputDateFormat.getTimezoneOffset() * 60000
+    );
+
+    // Extract year, month, and day components
+    const year = adjustedDate.getFullYear();
+    const month = String(adjustedDate.getMonth() + 1).padStart(2, "0"); // Adding 1 to month since getMonth() returns zero-based month
+    const day = String(adjustedDate.getDate()).padStart(2, "0");
+
+    // Format the date as MM-DD-YYYY
+    const formattedDate = `${month}-${day}-${year}`;
+
+    return formattedDate;
+  }
+
+  // Example usage:
+  const inputDate = "2024-05-03";
+  const formattedDate = formatDate(inputDate);
+  console.log(formattedDate); // Output: '05-03-2024'
 
   const to12HourFormat = (time: string): string => {
     const [hour, minute] = time.split(":").map(Number); // Convert the hour and minute parts to numbers
@@ -116,7 +146,7 @@ const AvailableRidesPage: React.FC = () => {
 
   return (
     <div className="AvailableRides">
-      <h1>Available Rides</h1>
+      <h1>{userType === "driver" ? "My Rides" : "Available Rides"}</h1>
 
       {rides.map((ride) => (
         <div key={ride._id.$oid} className="RideCard">
@@ -124,7 +154,14 @@ const AvailableRidesPage: React.FC = () => {
             <div>
               {ride.startPoint} -----to----- {ride.endPoint}
             </div>
-            <div className="time">{to12HourFormat(ride.time)}</div>
+            <div>
+              <div className="time">
+                {formatDate(ride.date)} -- <b>D:</b>{" "}
+                {to12HourFormat(ride.departureTime)}
+                {/* {ride.arrivalTime} */}
+              </div>
+              <div className="time"></div>
+            </div>
           </div>
 
           <div className="TimeAndDestination">
@@ -132,17 +169,22 @@ const AvailableRidesPage: React.FC = () => {
               {ride.userType === "rider"
                 ? `Riders: ${ride.numberOfRiders}`
                 : `Seats Available: ${ride.seatsAvailable}`}
+              <div style={{ paddingTop: 10 }}>
+                <b>{ride.duration} min </b>
+              </div>
             </div>
+
             <div className="Price">
               {ride.userType === "rider"
                 ? `${ride.pricePerSeat ? ride.pricePerSeat : "--"}$ /per person`
                 : `${ride.pricePerSeat}$ /per person`}
             </div>
           </div>
-
-          <button onClick={() => toggleDetails(ride._id.$oid)}>
-            {selectedId === ride._id.$oid ? "Hide Details" : "Show Details"}
-          </button>
+          {userType === "rider" && (
+            <button onClick={() => toggleDetails(ride._id.$oid)}>
+              {selectedId === ride._id.$oid ? "Hide Details" : "Show Details"}
+            </button>
+          )}
 
           {selectedId === ride._id.$oid && (
             <div style={{ paddingLeft: "20px" }}>
@@ -154,17 +196,18 @@ const AvailableRidesPage: React.FC = () => {
               <p style={{ color: "black" }}>Type: {ride.carInfo?.type}</p>
             </div>
           )}
-
-          <button
-            className="JoinButton"
-            // onClick={() => handleJoinRide(ride.id)}
-            onClick={openModal}
-          >
-            Book Ride
-          </button>
+          {userType === "rider" && (
+            <button
+              className="JoinButton"
+              // onClick={() => handleJoinRide(ride.id)}
+              onClick={() => openModal(ride._id.$oid)}
+            >
+              Book Ride
+            </button>
+          )}
           <Modal isOpen={isModalOpen} onClose={closeModal}>
             <h2>Ride Booking</h2>
-            <form onSubmit={(e) => handleSubmit(e, ride._id.$oid)}>
+            <form onSubmit={(e) => handleSubmit(e)}>
               <label htmlFor="numberInput">Enter number of people</label>
               <input
                 type="number"

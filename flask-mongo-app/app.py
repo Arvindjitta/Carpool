@@ -21,7 +21,7 @@ admins= db.admin
 transactions=db.transactions
 bookings=db.bookings
 rides = db.rides  # Accessing the 'rides' collection
-cars = db.car_info # Accessing the 'car_info' collection
+# cars = db.car_info # Accessing the 'car_info' collection
 
 app.config["JWT_SECRET_KEY"] = "your_jwt_secret_key"
 
@@ -52,8 +52,48 @@ def welcome():
 
 
 #This function handles the registration process when a POST request is made to the '/register' endpoint.
-@app.route('/register', methods=['POST']) 
+@app.route('/register', methods=['POST'])
 def register():
+    user_data = request.get_json()
+
+    required_fields = ['firstName', 'lastName', 'email', 'password', 'confirmPassword', 'address', 'city', 'state', 'zipCode']
+    if any(field not in user_data or not user_data[field] for field in required_fields):
+        return jsonify({'error': 'All fields must be filled'}), 400
+    if user_data['password'] != user_data['confirmPassword']:
+        return jsonify({'error': 'Passwords do not match'}), 400
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", user_data['email']):
+        return jsonify({'error': 'Invalid email format'}), 400
+    if len(user_data['password']) < 6:
+        return jsonify({'error': 'Password must be at least 6 characters long'}), 400
+
+    user_data['password'] = bcrypt.generate_password_hash(user_data['password']).decode('utf-8')
+    del user_data['confirmPassword']
+    user_data['wallet_balance'] = 0.0
+    user_data['createdAt'] = datetime.utcnow()
+
+    userType = user_data.get('userType')
+    if userType == 'driver':
+        driver_fields = ['ssn']
+        if any(field not in user_data or not user_data[field] for field in driver_fields):
+            return jsonify({'error': 'All driver specific fields must be filled'}), 400
+        if 'carInfo' not in user_data:
+            return jsonify({'error': 'Car information is required for drivers'}), 400
+        if db.drivers.find_one({'email': user_data['email']}):
+            return jsonify({'error': 'Email already in use'}), 409
+        result = drivers.insert_one(user_data)
+    elif userType == 'rider':
+        rider_fields = ['dateOfBirth']
+        if any(field not in user_data or not user_data[field] for field in rider_fields):
+            return jsonify({'error': 'All rider specific fields must be filled'}), 400
+        if db.riders.find_one({'email': user_data['email']}):
+            return jsonify({'error': 'Email already in use'}), 409
+        result = riders.insert_one(user_data)
+    else:
+        return jsonify({'error': 'Invalid user type'}), 400
+
+    userId = result.inserted_id
+    return jsonify({'message': 'User registered successfully', 'userId': str(userId)}), 201
+
     user_data = request.get_json()
 
     # Basic validation checks
@@ -147,7 +187,7 @@ def login():
         return jsonify({"error": str(e)}), 500
 
 
-#To schedule the ride by Driver
+# To schedule the ride by Driver
 @app.route('/list-ride', methods=['POST'])
 @jwt_required()  # This decorator ensures that this endpoint requires authentication
 def list_ride():
@@ -155,7 +195,7 @@ def list_ride():
     ride_data = request.get_json()
 
     # Start by checking common required fields
-    common_required_fields = ['startPoint', 'endPoint', 'date', 'time']
+    common_required_fields = ['startPoint', 'endPoint', 'date', 'arrivalTime', 'departureTime', 'duration', 'seatsAvailable', 'pricePerSeat']
     if not all(field in ride_data for field in common_required_fields):
         return jsonify({'error': 'Missing required ride details'}), 400
 
@@ -178,7 +218,7 @@ def list_ride():
     # Set the user who listed the ride
     ride_data['listedBy'] = current_user["_id"]
     ride_data['createdAt'] = datetime.utcnow()  # Add creation timestamp to the ride
-    #status varchar [note: 'Can be "Open", "In-progress", "Completed", "Cancelled"']
+    # Status varchar [note: 'Can be "Open", "In-progress", "Completed", "Cancelled"']
     ride_data['status'] = "Open" 
 
     try:
@@ -187,6 +227,47 @@ def list_ride():
         return jsonify({'message': 'Ride listed/scheduled successfully', 'rideId': str(result.inserted_id)}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# #To schedule the ride by Driver
+# @app.route('/list-ride', methods=['POST'])
+# @jwt_required()  # This decorator ensures that this endpoint requires authentication
+# def list_ride():
+#     current_user_email = get_jwt_identity()  # Extracts the identity from the token
+#     ride_data = request.get_json()
+
+#     # Start by checking common required fields
+#     common_required_fields = ['startPoint', 'endPoint', 'date', 'time']
+#     if not all(field in ride_data for field in common_required_fields):
+#         return jsonify({'error': 'Missing required ride details'}), 400
+
+#     # Retrieve current user's details from the users collection
+#     current_user = drivers.find_one({"email": current_user_email})
+#     if not current_user:
+#         return jsonify({"error": "User not found"}), 404
+
+#     # Check userType and required fields based on userType
+#     if current_user.get('userType') == 'driver':
+#         # Attempt to retrieve driver's car information
+#         ride_data['carInfo'] = current_user["carInfo"]
+    
+#     elif current_user.get('userType') == 'rider':
+#         if 'numberOfRiders' not in ride_data:
+#             return jsonify({'error': 'Number of riders is required for rider listing'}), 400
+#     else:
+#         return jsonify({'error': 'Invalid userType specified'}), 400
+
+#     # Set the user who listed the ride
+#     ride_data['listedBy'] = current_user["_id"]
+#     ride_data['createdAt'] = datetime.utcnow()  # Add creation timestamp to the ride
+#     #status varchar [note: 'Can be "Open", "In-progress", "Completed", "Cancelled"']
+#     ride_data['status'] = "Open" 
+
+#     try:
+#         # Insert the new ride document into the rides collection
+#         result = rides.insert_one(ride_data)
+#         return jsonify({'message': 'Ride listed/scheduled successfully', 'rideId': str(result.inserted_id)}), 201
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
 
 
 @app.route('/admin-details', methods=['GET'])
@@ -204,6 +285,49 @@ def get_admin_details():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# @app.route('/book-ride', methods=['POST'])
+# @jwt_required()  # Ensure authentication is required
+# def book_ride():
+#     try:
+#         # Get booking data from the request
+#         booking_data = request.get_json()
+        
+#         # Check if all required fields are present
+#         required_fields = ['rideId', 'bookedBy', 'seatsBooked', 'status', 'pickupLocation', 'departureTime', 'date']
+#         if not all(field in booking_data for field in required_fields):
+#             return jsonify({'error': 'Missing required booking details'}), 400
+
+#         # Check if the user has any active bookings
+#         current_user_email = get_jwt_identity()  # Get the email from the JWT token
+
+#           # Retrieve user ID using the email
+#         user_document = riders.find_one({"email": current_user_email})
+#         if not user_document:
+#             return jsonify({'error': 'User not found'}), 404
+#         current_user_id = user_document['_id']
+
+#        # Check if the user has any active bookings
+#         active_booking_count = bookings.count_documents({
+#             'bookedBy': str(current_user_id),
+#             'status': {"$in": ["Booked", "In-progress"]}  # Assuming these are the statuses for active bookings
+#         })
+#         print("Active", current_user_id, active_booking_count)
+        
+        
+#         if active_booking_count > 0:
+#             return jsonify({'error': 'You have an active booking. Please cancel it before booking a new ride.'}), 403
+
+#         # Generate timestamp for created_At
+#         booking_data['created_At'] =  datetime.utcnow()
+
+#         # Store the booking data in the bookings collection
+#         booking_id = bookings.insert_one(booking_data).inserted_id
+        
+#         return jsonify({'message': 'Ride booked successfully', 'bookingId': str(booking_id)}), 201
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
+
+
 @app.route('/book-ride', methods=['POST'])
 @jwt_required()  # Ensure authentication is required
 def book_ride():
@@ -212,39 +336,48 @@ def book_ride():
         booking_data = request.get_json()
         
         # Check if all required fields are present
-        required_fields = ['rideId', 'bookedBy', 'seatsBooked', 'status', 'pickupLocation']
+        required_fields = ['rideId', 'bookedBy', 'seatsBooked', 'status', 'pickupLocation', 'departureTime', 'date']
         if not all(field in booking_data for field in required_fields):
             return jsonify({'error': 'Missing required booking details'}), 400
 
+        # Retrieve the ride details
+        ride_id = booking_data['rideId']
+        ride = rides.find_one({"_id": ObjectId(ride_id)})
+        if not ride:
+            return jsonify({'error': 'Ride not found'}), 404
+
+        # Check if seats are available
+        seats_available = int(ride.get('seatsAvailable', 0))
+        seats_booked = int(booking_data.get('seatsBooked', 0))
+        if seats_booked > seats_available:
+            return jsonify({'error': 'Not enough seats available'}), 400
+
         # Check if the user has any active bookings
         current_user_email = get_jwt_identity()  # Get the email from the JWT token
-
-          # Retrieve user ID using the email
         user_document = riders.find_one({"email": current_user_email})
         if not user_document:
             return jsonify({'error': 'User not found'}), 404
         current_user_id = user_document['_id']
-
-       # Check if the user has any active bookings
         active_booking_count = bookings.count_documents({
             'bookedBy': str(current_user_id),
             'status': {"$in": ["Booked", "In-progress"]}  # Assuming these are the statuses for active bookings
         })
-        print("Active", current_user_id, active_booking_count)
-        
-        
         if active_booking_count > 0:
             return jsonify({'error': 'You have an active booking. Please cancel it before booking a new ride.'}), 403
 
-        # Generate timestamp for created_At
-        booking_data['created_At'] =  datetime.utcnow()
-
         # Store the booking data in the bookings collection
+        booking_data['created_At'] =  datetime.utcnow()
         booking_id = bookings.insert_one(booking_data).inserted_id
+        
+        # Update seatsAvailable in the ride collection
+        new_seats_available = seats_available - seats_booked
+        rides.update_one({"_id": ObjectId(ride_id)}, {"$set": {"seatsAvailable": new_seats_available}})
         
         return jsonify({'message': 'Ride booked successfully', 'bookingId': str(booking_id)}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
 
 #booked rides -rider
 @app.route('/rider/booked-rides', methods=['GET'])
@@ -264,22 +397,55 @@ def rider_booked_rides():
     except Exception as e:
         return jsonify({"error": "Failed to fetch booked rides", "details": str(e)}), 500
 
-#booked rides -driver
+# #booked rides -driver
+# @app.route('/driver/scheduled-bookings', methods=['GET'])
+# @jwt_required()
+# def driver_scheduled_bookings():
+#     current_user_email = get_jwt_identity()
+#     print("Current User Email:", current_user_email)
+#     try:
+#         # Retrieve driver details to get the driver's ID
+#         driver = drivers.find_one({"email": current_user_email})
+#         if not driver:
+#             return jsonify({"error": "Driver not found"}), 404
+       
+#         driver_id_obj = ObjectId(driver['_id']) 
+#         print("Driver ID:", driver_id_obj) 
+#         # Find all rides listed by the driver
+#         rides_cursor = rides.find({"listedBy": driver_id_obj})
+#         rides_list = list(rides_cursor)
+#         print(rides_cursor)
+
+#         # For each ride, find related bookings
+#         scheduled_bookings = []
+#         for ride in rides_list:
+#             ride_bookings = bookings.find({"rideId": str(ride['_id'])})
+#             for booking in ride_bookings:
+#                 scheduled_bookings.append(booking)
+
+#         return jsonify(json.loads(dumps(scheduled_bookings))), 200
+#     except Exception as e:
+#         return jsonify({"error": "Failed to fetch scheduled bookings", "details": str(e)}), 500
+
 @app.route('/driver/scheduled-bookings', methods=['GET'])
 @jwt_required()
 def driver_scheduled_bookings():
     current_user_email = get_jwt_identity()
+    user_id = request.args.get('userId')  # Get userId from query parameters
     print("Current User Email:", current_user_email)
     try:
         # Retrieve driver details to get the driver's ID
         driver = drivers.find_one({"email": current_user_email})
         if not driver:
             return jsonify({"error": "Driver not found"}), 404
-       
-        driver_id_obj = ObjectId(driver['_id']) 
-        print("Driver ID:", driver_id_obj) 
-        # Find all rides listed by the driver
-        rides_cursor = rides.find({"listedBy": driver_id_obj})
+
+        driver_id_obj = ObjectId(driver['_id'])
+        print("Driver ID:", driver_id_obj)
+        # Find all rides listed by the driver or the user
+        if user_id:
+            rides_cursor = rides.find({"listedBy": ObjectId(user_id)})
+        else:
+            rides_cursor = rides.find({"listedBy": driver_id_obj})
         rides_list = list(rides_cursor)
         print(rides_cursor)
 
@@ -294,6 +460,7 @@ def driver_scheduled_bookings():
     except Exception as e:
         return jsonify({"error": "Failed to fetch scheduled bookings", "details": str(e)}), 500
 
+
 #cancel booking
 @app.route('/cancel-booking/<booking_id>', methods=['POST'])
 @jwt_required()
@@ -305,11 +472,27 @@ def cancel_booking(booking_id):
         print("Booking ID:", booking_id)
         print("User ID:", current_user_id)
 
-
+        # Retrieve booking information
         booking = bookings.find_one({"_id": booking_id_obj})
         if not booking:
             return jsonify({"error": "Booking not found or user unauthorized to cancel this booking"}), 404
 
+        # Get ride ID and seats booked from the booking
+        ride_id = booking.get("rideId")
+        seats_booked = booking.get("seatsBooked")
+
+        # Increment seats available in the ride collection
+        ride = rides.find_one({"_id": ObjectId(ride_id)})
+        if not ride:
+            return jsonify({"error": "Ride not found"}), 404
+
+        current_seats_available = ride.get("seatsAvailable", 0)
+        new_seats_available = current_seats_available + seats_booked
+
+        # Update seatsAvailable in the ride collection
+        rides.update_one({"_id": ObjectId(ride_id)}, {"$set": {"seatsAvailable": new_seats_available}})
+
+        # Update booking status to "Cancelled"
         result = bookings.update_one(
             {"_id": booking_id_obj},
             {"$set": {"status": "Cancelled"}}

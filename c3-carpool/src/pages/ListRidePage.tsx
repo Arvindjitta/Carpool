@@ -10,14 +10,38 @@ const ListRidePage: React.FC = () => {
     startPoint: "",
     endPoint: "",
     date: "",
-    time: "",
+    arrivalTime: "",
+    departureTime: "", // New field for departure time
+    duration: "", // New field for duration
     seatsAvailable: "",
     pricePerSeat: "",
     numberOfRiders: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRideDetails({ ...rideDetails, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "duration") {
+      // Calculate arrival time based on duration
+      const [hours, minutes] = value.split(":").map(Number);
+      const [startHours, startMinutes] = rideDetails.departureTime
+        .split(":")
+        .map(Number);
+      let totalHours = startHours + hours;
+      let totalMinutes = startMinutes + minutes;
+      if (totalMinutes >= 60) {
+        totalHours += Math.floor(totalMinutes / 60);
+        totalMinutes %= 60;
+      }
+      const arrivalHours = totalHours % 12 || 12; // Convert to 12-hour format
+      const amPm = totalHours < 12 ? "AM" : "PM"; // Determine AM/PM
+      const arrivalMinutes = totalMinutes;
+      const arrivalTime = `${arrivalHours < 10 ? "0" : ""}${arrivalHours}:${
+        arrivalMinutes < 10 ? "0" : ""
+      }${arrivalMinutes} ${amPm}`;
+      setRideDetails({ ...rideDetails, arrivalTime, [name]: value });
+    } else {
+      setRideDetails({ ...rideDetails, [name]: value });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -77,13 +101,29 @@ const ListRidePage: React.FC = () => {
           onChange={handleChange}
           required
         />
+        <p>Start time:</p>
         <input
           type="time"
-          name="time"
-          value={rideDetails.time}
+          name="departureTime"
+          value={rideDetails.departureTime}
           onChange={handleChange}
           required
         />
+
+        <input
+          type="string"
+          name="duration"
+          placeholder="Duration (HH:MM)"
+          value={rideDetails.duration}
+          onChange={handleChange}
+          required
+        />
+
+        {/* Display arrival time */}
+        {rideDetails.arrivalTime && (
+          <p>Calculated Arrival Time: {rideDetails.arrivalTime}</p>
+        )}
+
         {userType === "driver" && (
           <input
             type="number"

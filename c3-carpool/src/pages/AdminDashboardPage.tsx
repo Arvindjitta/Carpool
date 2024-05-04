@@ -17,7 +17,7 @@ const AdminDashboardPage = () => {
     const isConfirmed = window.confirm("Are you sure you want to logout?");
     if (isConfirmed) {
       // Example: Clearing storage items and redirecting
-      localStorage.removeItem("authToken");
+      // localStorage.removeItem("authToken");
       localStorage.removeItem("access_token");
       localStorage.removeItem("userId");
       localStorage.removeItem("userType");
